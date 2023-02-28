@@ -1,121 +1,147 @@
-function createScatterplot(data, xLabel, yLabel, xDomain, yDomain, colorScale, id, xTicks, yTicks) {
-  // Define margin and dimensions for the scatterplot
-  const margin = {top: 20, right: 20, bottom: 50, left: 50};
-  const width = 450 - margin.left - margin.right;
-  const height = 450 - margin.top - margin.bottom;
+// External JS File
 
-  // Create SVG element for the scatterplot
-  const svg = d3.select(`#${id}`)
-                .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+// Define margin and dimensions for the scatterplot
+  const margin = {top: 50, right: 50, bottom: 50, left: 50};
+  const height = 550;
+  const width = 550; 
+  const vis_width = width - margin.left - margin.right;
+  const vis_height = height - margin.top - margin.bottom;
 
-  // Convert string data to numeric data
-  data.forEach(function(d) {
-    d[xLabel] = +d[xLabel];
-    d[yLabel] = +d[yLabel];
-  });
+// Create frame for scatter plot (Petal_Length vs. Sepal_Length)
+  const svg1 = d3.select("#lengthscatter")
+                 .append("svg")
+                 .attr("height", height)
+                 .attr("width", width)
+                 .attr("class", "frame"); 
 
-  // Create scales for x and y axes
-  const xScale = d3.scaleLinear()
-                   .domain(xDomain)
-                   .range([0, width]);
+// Create frame for scatter plot (Petal_Width vs. Sepal_Width)
+  const svg2 = d3.select("#widthscatter")
+                 .append("svg")
+                 .attr("height", height)
+                 .attr("width", width)
+                 .attr("class", "frame"); 
 
-  const yScale = d3.scaleLinear()
-                   .domain(yDomain)
-                   .range([height, 0]);
 
-  // Add x and y axes to the scatterplot
-  const xAxis = d3.axisBottom(xScale).ticks((xDomain[1] - xDomain[0]) / xTicks);
-  const yAxis = d3.axisLeft(yScale).ticks((yDomain[1] - yDomain[0]) / yTicks);
-
-  svg.append("g")
-     .attr("transform", "translate(0," + height + ")")
-     .call(xAxis);
-
-  svg.append("g")
-     .call(yAxis);
-
-  // Add points to the scatterplot
-  svg.selectAll(".dot")
-     .data(data)
-     .enter()
-     .append("circle")
-     .attr("class", "dot")
-     .attr("cx", d => xScale(d[xLabel]))
-     .attr("cy", d => yScale(d[yLabel]))
-     .attr("r", 3)
-     .style("fill", d => colorScale(d.Species))
-     .style("opacity", 0.5);
-}
-
-function createBarChart(data, id) {
-  // Define margin and dimensions for the bar chart
-  const margin = {top: 20, right: 20, bottom: 50, left: 50};
-  const width = 450 - margin.left - margin.right;
-  const height = 450 - margin.top - margin.bottom;
-
-  // Hard code the data for the bar chart
-  const counts = [50, 50, 50];
-
-  // Define color scale for different species
-  const colorScale = d3.scaleOrdinal()
-                     .domain(["setosa", "versicolor", "virginica"])
-                     .range(["#e41a1c", "#377eb8", "#4daf4a"]);
-
-  // Create SVG element for the bar chart
-  const svg = d3.select(`#${id}`)
-                .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  // Create x and y scales for the bar chart
-  const xScale = d3.scaleBand()
-                   .domain(["setosa", "versicolor", "virginica"])
-                   .range([0, width])
-                   .padding(0.2);
-
-  const yScale = d3.scaleLinear()
-                   .domain([0, d3.max(counts)])
-                   .range([height, 0]);
-
-  // Add x and y axes to the bar chart
-  const xAxis = d3.axisBottom(xScale);
-  const yAxis = d3.axisLeft(yScale);
-
-  svg.append("g")
-     .attr("transform", "translate(0," + height + ")")
-     .call(xAxis);
-
-  svg.append("g")
-     .call(yAxis);
-
-// Add bars to the bar chart
-svg.selectAll(".bar")
-   .data(counts)
-   .enter()
-   .append("rect")
-   .attr("class", "bar")
-   .attr("x", (d, i) => xScale(["setosa", "versicolor", "virginica"][i]))
-   .attr("y", d => yScale(d))
-   .attr("width", xScale.bandwidth())
-   .attr("height", d => height - yScale(d))
-   .style("fill", (d, i) => colorScale(["setosa", "versicolor", "virginica"][i]));
-
-}
+// Create frame for bar graph (Counts of Species)
+  const svg3 = d3.select("#bargraph")
+                    .append("svg")
+                    .attr("width", vis_width + margin.left + margin.right)
+                    .attr("height", vis_height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // Load data and create scatterplots
 d3.csv("data/iris.csv").then(function(data) {
-  // Define color scale for different species
-  const colorScale = d3.scaleOrdinal()
-                       .domain(["setosa", "versicolor", "virginica"])
-                       .range(["#e41a1c", "#377eb8", "#4daf4a"]);
+  
+// Constants for scatterplot Petal_Length vs Sepal_Length
+  const Sep_Max_Length = d3.max(data, (d) => {return parseInt(d.Sepal_Length);});
+  const Pet_Max_Length = d3.max(data, (d) => {return parseInt(d.Petal_Length);});
+  const Sep_Scale_Length = d3.scaleLinear() 
+                     .domain([0, (Sep_Max_Length + 1)]) 
+                     .range([0, vis_width]); 
+  const Pet_Scale_Length = d3.scaleLinear()
+                     .domain([0, (Pet_Max_Length + 1)])
+                     .range([vis_height, 0]);
 
-  createScatterplot(data, "Sepal_Length", "Petal_Length", [0, 8], [0, 7], colorScale, "lengthscatter", 1, 0.5);
-  createScatterplot(data, "Sepal_Width", "Petal_Width", [0, 5], [0, 3], colorScale, "widthscatter", 0.5, 0.2);
-  createBarChart(data, "bargraph");
+
+  let dot1 = svg1.append("g")
+                       .selectAll("dots")  
+                       .data(data)  
+                       .enter()       
+                       .append("circle")  
+                       .attr("cx", (d) => {return (Sep_Scale_Length(d.Sepal_Length) + margin.left);}) 
+                       .attr("cy", (d) => {return (Pet_Scale_Length(d.Petal_Length) + margin.top);}) 
+                       .attr("r", 5)
+                       .attr("class", (d) => {return d.Species;});
+
+// Define x-axis for first scatter plot
+  svg1.append("g") 
+        .attr("transform", "translate(" + margin.left + "," + (vis_height + margin.top) + ")") 
+        .call(d3.axisBottom(Sep_Scale_Length).ticks(9)) 
+        .attr("font-size", "10px");
+
+// Define y-axis for first scatter plot
+  svg1.append("g")       
+        .attr("transform", "translate(" + margin.left + "," + margin.bottom + ")")
+        .call(d3.axisLeft(Pet_Scale_Length).ticks(14))
+        .attr("font-size", "10px");
+
+// Constants for scatterplot Petal_Width vs Sepal_Width
+  const Sep_Max_Width = d3.max(data, (d) => {return parseInt(d.Sepal_Width);});
+  const Pet_Max_Width = d3.max(data, (d) => {return parseInt(d.Petal_Width);});
+  const Sep_Scale_Width = d3.scaleLinear() 
+                     .domain([0, (Sep_Max_Width + 1)]) // add some padding  
+                     .range([0, vis_width]);  
+  const Pet_Scale_Width = d3.scaleLinear()
+                     .domain([0, (Pet_Max_Width + 1)])
+                     .range([vis_height, 0]);
+
+
+let dot2 = svg2.append("g")
+                       .selectAll("dots")
+                       .data(data)  
+                       .enter()       
+                       .append("circle")  
+                       .attr("cx", (d) => {return (Sep_Scale_Width(d.Sepal_Width) + margin.left);}) 
+                       .attr("cy", (d) => {return (Pet_Scale_Width(d.Petal_Width) + margin.top);}) 
+                       .attr("r", 5)
+                       .attr("class", (d) => {return d.Species;});
+
+// Define x-axis for first second scatter plot
+  svg2.append("g") 
+        .attr("transform", "translate(" + margin.left + "," + (vis_height + margin.top) + ")") 
+        .call(d3.axisBottom(Sep_Scale_Width).ticks(9)) 
+        .attr("font-size", "10px");
+
+// Define y-axis for first second scatter plot
+  svg2.append("g")       
+        .attr("transform", "translate(" + margin.left + "," + margin.bottom + ")")
+        .call(d3.axisLeft(Pet_Scale_Width).ticks(14))
+        .attr("font-size", "10px");
+
+svg2.call(d3.brush()                
+                 .extent([[0,0], [width, height]]) 
+                 .on("start brush", brushChart)); 
+
+// Create Counts of Species
+  const counts = 50;
+  const bar_species = d3.scaleBand()
+                        .range([ 0, vis_width])
+                        .domain(data.map(function(d) {return d.Species;}))
+                        .padding(0.2);
+  const bar_count =  d3.scaleLinear()
+                        .domain([0, counts])
+                        .range([vis_height, 0]);
+
+  svg3.append("g")
+        .attr("transform", "translate(0," + vis_height + ")")
+        .call(d3.axisBottom(bar_species))
+        .selectAll("text");
+
+  svg3.append("g")
+        .call(d3.axisLeft(bar_count));
+
+  let bar = svg3.append("g")
+                    .selectAll("bar")
+                    .data(data)
+                    .enter()
+                    .append("rect")
+                    .attr("x", function(d) {return bar_species(d.Species);})
+                    .attr("y", bar_count(50))
+                    .attr("width", bar_species.bandwidth())
+                    .attr("height", function(d) {return vis_height - bar_count(50);})
+                    .attr("class", (d) => {return d.Species;});
+
+  function brushChart(event) {
+    brushselect = event.selection;
+    dot1.classed("brushed", function(d){return checkBrushed(brushselect, Sep_Scale_Width(d.Sepal_Width) + margin.left, Pet_Scale_Width(d.Petal_Width) + margin.top );})
+    dot2.classed("brushed", function(d){return checkBrushed(brushselect, Sep_Scale_Width(d.Sepal_Width) + margin.left, Pet_Scale_Width(d.Petal_Width) + margin.top );})
+    bar.classed("brushed", function(d){return checkBrushed(brushselect, Sep_Scale_Width(d.Sepal_Width) + margin.left, Pet_Scale_Width(d.Petal_Width) + margin.top );})
+  };
+
+  function checkBrushed(coordinates, cx, cy) {
+    const [[x0, y0], [x1, y1]] = coordinates; 
+    return cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1;
+  };
 });
+

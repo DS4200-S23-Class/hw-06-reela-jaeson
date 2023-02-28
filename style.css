@@ -18,3 +18,27 @@ h2, h3 {
   box-sizing: border-box;
   padding: 0 10px;
 }
+
+.setosa {
+  fill: #e41a1c;
+  opacity: 50%;
+}
+
+.versicolor {
+  fill: #377eb8;
+  opacity: 50%;
+}
+
+.virginica {
+  fill: #4daf4a;
+  opacity: 50%;
+}
+
+.brushed {
+  opacity: 100%;
+  stroke: orange;
+  stroke-width: 3px;
+}
+
+
+
